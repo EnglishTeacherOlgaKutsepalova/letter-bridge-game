@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мост букв: строй и читай</title>
+    <style>
+        :root {
+            --bg-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png');
+            --slot-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/bridge-slot.png');
+        }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: 'Arial', sans-serif; }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: var(--bg-url) no-repeat center center;
+            background-size: cover;
+        }
+
+        /* Карта и персонаж */
+        #hero {
+            position: absolute;
+            width: 100px;
+            bottom: 10%; /* Начало у хижины */
+            left: 50%;
+            transform: translateX(-50%);
+            transition: bottom 1.5s ease-in-out, left 1.5s ease-in-out;
+            z-index: 10;
+        }
+
+        /* Игровая зона сверху */
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 20;
+        }
+
+        .target-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.8);
+            padding: 10px;
+            border-radius: 15px;
+        }
+
+        #target-image { height: 120px; border-radius: 10px; }
+        .audio-btn { cursor: pointer; width: 50px; transition: transform 0.2s; }
+        .audio-btn:hover { transform: scale(1.1); }
+
+        /* Мост */
+        #bridge-slots {
+            display: flex;
+            gap: 10px;
+            min-height: 110px;
+        }
+
+        .slot {
+            width: 100px;
+            height: 110px;
+            background: var(--slot-url) no-repeat center;
+            background-size: contain;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Инвентарь с буквами */
+        #inventory {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 20;
+        }
+
+        .letter-block {
+            width: 90px;
+            height: 100px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            cursor: grab;
+            transition: transform 0.2s;
+        }
+
+        .letter-block:active { cursor: grabbing; }
+
+        /* Анимации */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .error { animation: shake 0.4s ease-in-out 3; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <img id="hero" src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/hero.png" alt="Hero">
+
+    <div id="ui-layer">
+        <div class="target-card">
+            <img id="target-image" src="" alt="Word">
+            <img id="dictation-btn" class="audio-btn" src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/dictation-btn.png" onclick="game.playAudio()">
+        </div>
+        
+        <div id="bridge-slots"></div>
+        <button id="check-btn" onclick="game.checkWord()" style="padding: 10px 20px; font-size: 18px; cursor:pointer;">ПРОВЕРИТЬ</button>
+    </div>
+
+    <div id="inventory"></div>
+</div>
+
+<script>
+const BASE = 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/';
+
+const CONFIG = {
+    levels: [
+        { word: 'sat', img: 'sat.png', audio: 'sat.mp3' },
+        { word: 'pat', img: 'pat.png', audio: 'pat.mp3' },
+        { word: 'sit', img: 'sit.png', audio: 'sit.mp3' },
+        { word: 'pit', img: 'pit.png', audio: 'pit.mp3' },
+        { word: 'pin', img: 'pin.png', audio: 'pin.mp3' },
+        { word: 'tin', img: 'tin.png', audio: 'tin.mp3' },
+        { word: 'tip', img: 'tip.png', audio: 'tip.mp3' }
+    ]
+};
+
+class BridgeGame {
+    constructor() {
+        this.currentIdx = 0;
+        this.loadLevel();
+    }
+
+    loadLevel() {
+        const level = CONFIG.levels[this.currentIdx];
+        document.getElementById('target-image').src = BASE + level.img;
+        
+        const slotsCont = document.getElementById('bridge-slots');
+        slotsCont.innerHTML = '';
+        level.word.split('').forEach((_, i) => {
+            const slot = document.createElement('div');
+            slot.className = 'slot';
+            slot.dataset.index = i;
+            slot.ondragover = (e) => e.preventDefault();
+            slot.ondrop = (e) => this.handleDrop(e);
+            slotsCont.appendChild(slot);
+        });
+
+        this.renderInventory(level.word);
+        this.updateHeroPosition();
+    }
+
+    renderInventory(word) {
+        const inv = document.getElementById('inventory');
+        inv.innerHTML = '';
+        const chars = word.split('').sort(() => Math.random() - 0.5);
+        
+        chars.forEach(char => {
+            const block = document.createElement('div');
+            block.className = 'letter-block';
+            block.style.backgroundImage = `url(${BASE}${char}-hint.png)`;
+            block.draggable = true;
+            block.dataset.letter = char;
+            block.ondragstart = (e) => e.dataTransfer.setData('text', char);
+            inv.appendChild(block);
+        });
+    }
+
+    handleDrop(e) {
+        const char = e.dataTransfer.getData('text');
+        const slot = e.target.closest('.slot');
+        if (slot && !slot.hasChildNodes()) {
+            const block = document.createElement('div');
+            block.className = 'letter-block';
+            block.style.backgroundImage = `url(${BASE}${char}.png)`; // Меняем на чистую букву при установке
+            block.dataset.letter = char;
+            slot.appendChild(block);
+        }
+    }
+
+    checkWord() {
+        const slots = document.querySelectorAll('.slot');
+        let builtWord = '';
+        slots.forEach(s => {
+            if (s.firstChild) builtWord += s.firstChild.dataset.letter;
+        });
+
+        if (builtWord === CONFIG.levels[this.currentIdx].word) {
+            this.handleSuccess();
+        } else {
+            this.handleError();
+        }
+    }
+
+    handleSuccess() {
+        alert("Молодец! Мост построен!"); [cite: 18, 54]
+        this.currentIdx++;
+        if (this.currentIdx < CONFIG.levels.length) {
+            this.loadLevel();
+        } else {
+            alert("Поздравляем! Ты дошел до замка!"); [cite: 26, 52]
+        }
+    }
+
+    handleError() {
+        const slots = document.getElementById('bridge-slots');
+        slots.classList.add('error'); [cite: 39]
+        setTimeout(() => slots.classList.remove('error'), 500);
+    }
+
+    playAudio() {
+        const audio = new Audio(BASE + CONFIG.levels[this.currentIdx].audio);
+        audio.play(); [cite: 35, 58]
+    }
+
+    updateHeroPosition() {
+        const hero = document.getElementById('hero');
+        const progress = (this.currentIdx / CONFIG.levels.length) * 80;
+        hero.src = BASE + 'hero.gif';
+        hero.style.bottom = (10 + progress) + '%';
+        setTimeout(() => hero.src = BASE + 'hero.png', 1500);
+    }
+}
+
+const game = new BridgeGame();
+</script>
+</body>
+</html>
