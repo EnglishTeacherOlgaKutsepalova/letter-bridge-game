@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letter Bridge: Final Edition</title>
+    <title>Letter Bridge: Final Pro</title>
     <style>
         :root {
             --bg-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png');
@@ -50,7 +50,7 @@
             z-index: 100;
             transition: all 1.2s ease-in-out;
             display: none;
-            transform: translate(-50%, -100%); /* Точка в PATH — это ноги центра героя */
+            transform: translate(-50%, -100%);
         }
         #hero { width: 100%; }
 
@@ -97,9 +97,6 @@
 
         #progress-container { position: absolute; top: 0; width: 100%; height: 12px; background: rgba(0,0,0,0.4); z-index: 200; }
         #progress-bar { height: 100%; width: 0%; background: #2ecc71; transition: width 0.6s; }
-
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-15px); } 75% { transform: translateX(15px); } }
-        .error-shake { animation: shake 0.4s ease-in-out 2; }
     </style>
 </head>
 <body>
@@ -126,143 +123,12 @@
 <script>
 const BASE = 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/';
 
-// Твои новые координаты из Фото 2
+// Координаты обновлены (везде прибавлено +50 к X)
 const PATH = [
-    {x: 420, y: 472},  // 0
-    {x: 642, y: 651},  // 1
-    {x: 887, y: 775},  // 2
-    {x: 1163, y: 645}, // 3
-    {x: 1017, y: 531}, // 4
-    {x: 836, y: 462},  // 5
-    {x: 1014, y: 410}, // 6
-    {x: 1269, y: 191}  // 7
-];
-
-function startGame() {
-    document.getElementById('start-screen').style.display = 'none';
-    const hc = document.getElementById('hero-container');
-    hc.style.display = 'block';
-    hc.style.left = PATH[0].x + 'px';
-    hc.style.top = PATH[0].y + 'px';
-    setTimeout(showIntro, 500);
-}
-
-function showIntro() {
-    const db = document.getElementById('dialog-box');
-    db.style.display = 'block';
-    document.getElementById('dialog-text').innerText = "Hello! Help me build the words and cross the bridges to get to the castle. Listen, drag and drop the bridge blocks to make the words.";
-}
-
-function startFirstTask() {
-    document.getElementById('dialog-box').style.display = 'none';
-    document.getElementById('ui-layer').style.display = 'flex';
-    game.loadLevel();
-}
-
-class BridgeGame {
-    constructor() {
-        this.levels = [
-            { word: 'sat', img: 'sat.png', audio: 'sat.mp3' },
-            { word: 'pat', img: 'pat.png', audio: 'pat.mp3' },
-            { word: 'sit', img: 'sit.png', audio: 'sit.mp3' },
-            { word: 'pit', img: 'pit.png', audio: 'pit.mp3' },
-            { word: 'pin', img: 'pin.png', audio: 'pin.mp3' },
-            { word: 'tin', img: 'tin.png', audio: 'tin.mp3' },
-            { word: 'tip', img: 'tip.png', audio: 'tip.mp3' }
-        ];
-        this.currentIdx = 0;
-    }
-
-    loadLevel() {
-        const lvl = this.levels[this.currentIdx];
-        document.getElementById('target-image').src = BASE + lvl.img;
-        const slots = document.getElementById('bridge-slots');
-        slots.innerHTML = '';
-        lvl.word.split('').forEach(() => {
-            const s = document.createElement('div');
-            s.className = 'slot';
-            s.ondragover = (e) => e.preventDefault();
-            s.ondrop = (e) => this.handleDrop(e);
-            slots.appendChild(s);
-        });
-        document.getElementById('inventory').style.display = 'flex'; // Показываем манускрипт только когда есть буквы
-        this.renderInventory(lvl.word);
-    }
-
-    renderInventory(word) {
-        const inv = document.getElementById('inventory');
-        inv.innerHTML = '';
-        word.split('').sort(() => Math.random() - 0.5).forEach(char => {
-            const b = document.createElement('div');
-            b.className = 'letter-block';
-            b.style.backgroundImage = `url(${BASE}${char}-hint.png)`;
-            b.draggable = true;
-            b.dataset.letter = char;
-            b.ondragstart = (e) => e.dataTransfer.setData('text', char);
-            inv.appendChild(b);
-        });
-    }
-
-    handleDrop(e) {
-        e.preventDefault();
-        const char = e.dataTransfer.getData('text');
-        const slot = e.target.closest('.slot');
-        if (slot && !slot.hasChildNodes()) {
-            const b = document.createElement('div');
-            b.className = 'letter-block';
-            b.style.backgroundImage = `url(${BASE}${char}.png)`;
-            b.dataset.letter = char;
-            slot.appendChild(b);
-            const original = Array.from(document.querySelectorAll('#inventory .letter-block')).find(el => el.dataset.letter === char);
-            if(original) original.remove();
-        }
-    }
-
-    checkWord() {
-        const slots = document.querySelectorAll('.slot');
-        let built = '';
-        slots.forEach(s => { if(s.firstChild) built += s.firstChild.dataset.letter; });
-        if (built === this.levels[this.currentIdx].word) {
-            this.handleSuccess();
-        } else {
-            this.handleError();
-        }
-    }
-
-    handleSuccess() {
-        this.currentIdx++;
-        document.getElementById('progress-bar').style.width = (this.currentIdx / this.levels.length * 100) + '%';
-        
-        // КЛЮЧЕВОЙ МОМЕНТ: Скрываем инвентарь (манускрипт) сразу после успеха
-        document.getElementById('inventory').style.display = 'none';
-        
-        this.moveHero();
-        if (this.currentIdx < this.levels.length) {
-            setTimeout(() => this.loadLevel(), 1500);
-        } else {
-            setTimeout(() => { window.location.href = 'https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/cover.gif'; }, 2000);
-        }
-    }
-
-    handleError() {
-        const sc = document.getElementById('bridge-slots');
-        sc.classList.add('error-shake');
-        setTimeout(() => { sc.classList.remove('error-shake'); this.loadLevel(); }, 500);
-    }
-
-    moveHero() {
-        const hc = document.getElementById('hero-container');
-        const h = document.getElementById('hero');
-        const p = PATH[this.currentIdx];
-        h.src = BASE + 'hero.gif';
-        hc.style.left = p.x + 'px';
-        hc.style.top = p.y + 'px';
-        setTimeout(() => h.src = BASE + 'hero.png', 1200);
-    }
-
-    playAudio() { new Audio(BASE + this.levels[this.currentIdx].audio).play(); }
-}
-const game = new BridgeGame();
-</script>
-</body>
-</html>
+    {x: 470, y: 472},  // 0 - Старт (+50 вправо)
+    {x: 692, y: 651},  // 1
+    {x: 937, y: 775},  // 2
+    {x: 1213, y: 645}, // 3
+    {x: 1067, y: 531}, // 4
+    {x: 886, y: 462},  // 5
+    {x: 1064, y: 410},
