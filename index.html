@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letter Bridge: Adventure</title>
+    <title>Letter Bridge: Adventure 16:9</title>
     <style>
         :root {
             --bg-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png');
@@ -15,7 +15,7 @@
         
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background: #111; 
+            overflow: hidden; background: #000; 
             display: flex; justify-content: center; align-items: center; 
         }
         
@@ -58,7 +58,7 @@
             z-index: 100;
             transition: all 1.2s ease-in-out;
             display: none;
-            /* ХИТРОСТЬ: точка {x,y} теперь — это низ центра персонажа (его ноги) */
+            /* Важно: точка PATH теперь указывает на НОГИ и ЦЕНТР героя */
             transform: translate(-50%, -100%);
         }
         #hero { width: 100%; }
@@ -120,6 +120,7 @@
     <div id="progress-container"><div id="progress-bar"></div></div>
     <div id="hero-container"><img id="hero" src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/hero.png"></div>
     <div id="dialog-box" onclick="startFirstTask()"><p id="dialog-text" style="font-size: 26px; line-height: 1.4; color: #4a2f1b; font-weight: bold; margin-top: 60px;"></p></div>
+    
     <div id="ui-layer">
         <div class="target-card">
             <img id="target-image" style="height: 70px;">
@@ -134,16 +135,15 @@
 <script>
 const BASE = 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/';
 
-// Массив путей. Координаты теперь указывают на точку МЕЖДУ СТУПНЯМИ персонажа.
 const PATH = [
-    {x: 420, y: 472},  // 0 - Твоя начальная точка (ноги персонажа)
-    {x: 580, y: 640},  // 1
-    {x: 780, y: 770},  // 2
-    {x: 1030, y: 640}, // 3
-    {x: 880, y: 530},  // 4
-    {x: 720, y: 460},  // 5
-    {x: 950, y: 410},  // 6
-    {x: 1180, y: 180}  // 7 - Замок
+    {x: 420, y: 472},  // 0 - Твоя точка (ступни персонажа)
+    {x: 520, y: 640},  // 1
+    {x: 750, y: 780},  // 2
+    {x: 1050, y: 650}, // 3
+    {x: 850, y: 530},  // 4
+    {x: 650, y: 460},  // 5
+    {x: 900, y: 410},  // 6
+    {x: 1150, y: 150}  // 7
 ];
 
 function startGame() {
