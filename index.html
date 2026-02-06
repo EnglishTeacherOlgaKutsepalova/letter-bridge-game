@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letter Bridge: Adventure 16:9</title>
+    <title>Letter Bridge: Final Edition</title>
     <style>
         :root {
             --bg-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png');
@@ -13,11 +13,7 @@
             --slot-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/bridge-slot.png');
         }
         
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background: #000; 
-            display: flex; justify-content: center; align-items: center; 
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; }
         
         #game-viewport {
             position: relative;
@@ -28,11 +24,7 @@
             overflow: hidden;
         }
 
-        #start-screen { 
-            position: absolute; inset: 0; 
-            display: flex; justify-content: center; align-items: center; 
-            z-index: 1000; background: rgba(0,0,0,0.6); 
-        }
+        #start-screen { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 1000; background: rgba(0,0,0,0.6); }
         #start-button { cursor: pointer; width: 600px; }
 
         #dialog-box {
@@ -58,8 +50,7 @@
             z-index: 100;
             transition: all 1.2s ease-in-out;
             display: none;
-            /* Важно: точка PATH теперь указывает на НОГИ и ЦЕНТР героя */
-            transform: translate(-50%, -100%);
+            transform: translate(-50%, -100%); /* Точка в PATH — это ноги центра героя */
         }
         #hero { width: 100%; }
 
@@ -135,15 +126,16 @@
 <script>
 const BASE = 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/';
 
+// Твои новые координаты из Фото 2
 const PATH = [
-    {x: 420, y: 472},  // 0 - Твоя точка (ступни персонажа)
-    {x: 520, y: 640},  // 1
-    {x: 750, y: 780},  // 2
-    {x: 1050, y: 650}, // 3
-    {x: 850, y: 530},  // 4
-    {x: 650, y: 460},  // 5
-    {x: 900, y: 410},  // 6
-    {x: 1150, y: 150}  // 7
+    {x: 420, y: 472},  // 0
+    {x: 642, y: 651},  // 1
+    {x: 887, y: 775},  // 2
+    {x: 1163, y: 645}, // 3
+    {x: 1017, y: 531}, // 4
+    {x: 836, y: 462},  // 5
+    {x: 1014, y: 410}, // 6
+    {x: 1269, y: 191}  // 7
 ];
 
 function startGame() {
@@ -193,7 +185,7 @@ class BridgeGame {
             s.ondrop = (e) => this.handleDrop(e);
             slots.appendChild(s);
         });
-        document.getElementById('inventory').style.display = 'flex';
+        document.getElementById('inventory').style.display = 'flex'; // Показываем манускрипт только когда есть буквы
         this.renderInventory(lvl.word);
     }
 
@@ -240,7 +232,10 @@ class BridgeGame {
     handleSuccess() {
         this.currentIdx++;
         document.getElementById('progress-bar').style.width = (this.currentIdx / this.levels.length * 100) + '%';
+        
+        // КЛЮЧЕВОЙ МОМЕНТ: Скрываем инвентарь (манускрипт) сразу после успеха
         document.getElementById('inventory').style.display = 'none';
+        
         this.moveHero();
         if (this.currentIdx < this.levels.length) {
             setTimeout(() => this.loadLevel(), 1500);
