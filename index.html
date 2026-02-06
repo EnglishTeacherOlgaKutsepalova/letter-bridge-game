@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letter Bridge: Adventure Fixed</title>
+    <title>Letter Bridge: Precision Movement</title>
     <style>
         :root {
             --bg-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png');
@@ -83,7 +83,7 @@
         .slot { background-image: var(--slot-url); }
 
         #inventory {
-            display: none; /* Скрыто при старте */
+            display: none;
             position: absolute;
             bottom: 30px; left: 50%;
             transform: translateX(-50%);
@@ -126,9 +126,16 @@
 <script>
 const BASE = 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/';
 
+// Координаты перенастроены по твоей инструкции:
 const PATH = [
-    {x: 470, y: 472}, {x: 692, y: 651}, {x: 937, y: 775}, {x: 1213, y: 645},
-    {x: 1067, y: 531}, {x: 886, y: 462}, {x: 1064, y: 410}, {x: 1319, y: 191}
+    {x: 510, y: 492},  // 0: 470+40 вправо, 472+20 вниз
+    {x: 792, y: 651},  // 1: 692+100 вправо
+    {x: 1037, y: 775}, // 2: 937+100 вправо
+    {x: 1213, y: 595}, // 3: 645-50 вверх
+    {x: 967, y: 541},  // 4: 1067-100 влево, 531+10 вниз
+    {x: 836, y: 542},  // 5: 886-50 влево, 462+80 вниз
+    {x: 764, y: 420},  // 6: 1064-300 влево, 410+10 вниз
+    {x: 1219, y: 591}  // 7: 1319-100 влево, 191+400 вниз
 ];
 
 function startGame() {
@@ -179,9 +186,7 @@ class BridgeGame {
             slots.appendChild(s);
         });
         
-        // Показываем подложку инвентаря
-        const inv = document.getElementById('inventory');
-        inv.style.display = 'flex';
+        document.getElementById('inventory').style.display = 'flex';
         this.renderInventory(lvl.word);
     }
 
@@ -231,8 +236,6 @@ class BridgeGame {
     handleSuccess() {
         this.currentIdx++;
         document.getElementById('progress-bar').style.width = (this.currentIdx / this.levels.length * 100) + '%';
-        
-        // Убираем манускрипт при переходе
         document.getElementById('inventory').style.display = 'none';
         
         this.moveHero();
