@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letter Bridge: Professional Edition</title>
+    <title>Letter Bridge: Adventure Mode</title>
     <style>
         :root {
             --bg-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png');
@@ -15,24 +15,26 @@
         
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background: #222; 
+            overflow: hidden; background: #111; 
             display: flex; justify-content: center; align-items: center; 
         }
         
-        /* Фиксированный размер 1680x945 для 100% отображения */
         #game-viewport {
             position: relative;
             width: 1680px;
             height: 945px;
             background: var(--bg-url) no-repeat center center;
-            background-size: cover; /* Зум убран */
+            background-size: cover;
             overflow: hidden;
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
 
+        /* Стартовый экран */
         #start-screen { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 1000; background: rgba(0,0,0,0.6); }
-        #start-button { cursor: pointer; width: 600px; }
+        #start-button { cursor: pointer; width: 600px; transition: transform 0.2s; }
+        #start-button:hover { transform: scale(1.05); }
 
+        /* Описание игры */
         #dialog-box {
             display: none;
             position: absolute;
@@ -59,6 +61,7 @@
         }
         #hero { width: 100%; }
 
+        /* Верхний UI */
         #ui-layer {
             display: none;
             position: absolute;
@@ -76,18 +79,17 @@
             display: flex; align-items: center; gap: 20px;
         }
 
-        /* Мостики ближе друг к другу */
         #bridge-slots { 
             background: var(--ui-bg) no-repeat center;
             background-size: 100% 100%;
             padding: 40px 60px;
             display: flex; 
-            gap: 5px; /* Минимальный зазор для слитности слова */
+            gap: 8px; 
         }
 
         .slot, .letter-block { 
-            width: 160px; 
-            height: 100px; 
+            width: 170px; 
+            height: 110px; 
             background-size: contain; 
             background-repeat: no-repeat; 
             background-position: center; 
@@ -95,18 +97,19 @@
 
         .slot { background-image: var(--slot-url); }
 
-        /* Общая подложка инвентаря background1.png */
+        /* Нижний инвентарь (скрыт по умолчанию) */
         #inventory {
+            display: none; /* Убрана пустая подложка при входе */
             position: absolute;
             bottom: 30px; left: 50%;
             transform: translateX(-50%);
-            display: flex; 
             gap: 20px;
             padding: 40px 80px;
             background: var(--hint-bg) no-repeat center;
             background-size: 100% 100%;
             min-width: 400px;
             justify-content: center;
+            z-index: 50;
         }
 
         #progress-container { position: absolute; top: 0; width: 100%; height: 12px; background: rgba(0,0,0,0.4); z-index: 200; }
@@ -139,7 +142,7 @@
             <img src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/dictation-btn.png" style="width: 45px; cursor: pointer;" onclick="game.playAudio()">
         </div>
         <div id="bridge-slots"></div>
-        <button onclick="game.checkWord()" style="margin-top:10px; padding: 12px 35px; font-size: 22px; cursor: pointer; background: #f39c12; border: none; border-radius: 10px; color: white; font-weight: bold;">Check Word</button>
+        <button onclick="game.checkWord()" style="margin-top:10px; padding: 12px 35px; font-size: 22px; cursor: pointer; background: #f39c12; border: none; border-radius: 10px; color: white; font-weight: bold; box-shadow: 0 4px 0 #d35400;">Check Word</button>
     </div>
 
     <div id="inventory"></div>
@@ -148,11 +151,10 @@
 <script>
 const BASE = 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/';
 
-// Координаты 0-7: 0 теперь точно у двери хижины
 const PATH = [
-    {x: 230, y: 460},  // 0 - У двери хижины [cite: 78]
-    {x: 430, y: 650},  // 1
-    {x: 650, y: 780},  // 2
+    {x: 230, y: 455},  // 0 - Порог хижины
+    {x: 430, y: 640},  // 1
+    {x: 650, y: 770},  // 2
     {x: 930, y: 640},  // 3
     {x: 750, y: 530},  // 4
     {x: 530, y: 460},  // 5
@@ -161,13 +163,29 @@ const PATH = [
 ];
 
 function startGame() {
+    // Скрываем стартовый экран с кнопкой
     document.getElementById('start-screen').style.display = 'none';
+    
+    // Показываем контейнер с героем
     const hc = document.getElementById('hero-container');
     hc.style.display = 'block';
+    
+    // Устанавливаем героя в начальную точку (Точка 0 в массиве PATH)
     hc.style.left = PATH[0].x + 'px';
     hc.style.top = PATH[0].y + 'px';
     
+    // Запускаем появление диалогового окна через полсекунды
     setTimeout(showIntro, 500);
+
+    // --- ЛАЙФХАК ДЛЯ ВЫЧИСЛЕНИЯ КООРДИНАТ ---
+    // Нажми в любое место игрового поля, и браузер покажет тебе X и Y для массива PATH
+    document.getElementById('game-viewport').onclick = function(e) {
+        const rect = this.getBoundingClientRect();
+        const x = Math.round(e.clientX - rect.left);
+        const y = Math.round(e.clientY - rect.top);
+        console.log(`Точка для PATH: {x: ${x}, y: ${y}}`);
+    };
+    // ----------------------------------------
 }
 
 function showIntro() {
@@ -179,6 +197,7 @@ function showIntro() {
 function startFirstTask() {
     document.getElementById('dialog-box').style.display = 'none';
     document.getElementById('ui-layer').style.display = 'flex';
+    document.getElementById('inventory').style.display = 'flex'; // Показываем инвентарь только здесь
     game.loadLevel();
 }
 
@@ -208,6 +227,7 @@ class BridgeGame {
             s.ondrop = (e) => this.handleDrop(e);
             slots.appendChild(s);
         });
+        document.getElementById('inventory').style.display = 'flex'; // Убеждаемся, что виден
         this.renderInventory(lvl.word);
     }
 
@@ -255,11 +275,22 @@ class BridgeGame {
     handleSuccess() {
         this.currentIdx++;
         document.getElementById('progress-bar').style.width = (this.currentIdx / this.levels.length * 100) + '%';
+        
+        // Скрываем инвентарь и задание во время перехода
+        document.getElementById('inventory').style.display = 'none';
+        document.getElementById('ui-layer').style.opacity = '0';
+        
         this.moveHero();
+        
         if (this.currentIdx < this.levels.length) {
-            setTimeout(() => this.loadLevel(), 1500);
+            setTimeout(() => {
+                document.getElementById('ui-layer').style.opacity = '1';
+                this.loadLevel();
+            }, 1500);
         } else {
-            setTimeout(() => { location.href = 'https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/cover.gif'; }, 2000);
+            setTimeout(() => { 
+                window.location.href = 'https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/cover.gif'; 
+            }, 2000);
         }
     }
 
