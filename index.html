@@ -3,182 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letter Bridge: Build and Read</title>
+    <title>Letter Bridge: Adventure</title>
     <style>
         :root {
+            /* Используем твой новый фон */
             --bg-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png');
-            --slot-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/bridge-slot.png');
-            --panel-bg: rgba(255, 255, 255, 0.9);
+            --ui-bg: url('https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/background.png');
+            --word-bg: url('https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/wordbackground.png');
         }
         
-        body, html { 
-            margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; font-family: 'Arial', sans-serif; 
-            display: flex; justify-content: center; align-items: center;
-            background: #333;
-        }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; font-family: 'Arial', sans-serif; }
         
-        /* Фиксированный размер игрового поля 1200x675 */
         #game-viewport {
             position: relative;
             width: 1200px;
             height: 675px;
+            margin: auto;
             background: var(--bg-url) no-repeat center center;
-            background-size: contain; /* Фон вмещается полностью */
-            background-color: #000;
+            background-size: 110%; /* Начальное состояние - немного растянут */
+            transition: background-size 2s ease-in-out;
             overflow: hidden;
         }
 
-        /* Прогресс-бар сверху */
-        #progress-container {
+        /* Кнопка старта */
+        #start-screen {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 10px;
-            background: rgba(0,0,0,0.2);
-            z-index: 100;
-        }
-        #progress-bar {
-            height: 100%; width: 0%;
-            background: #2ecc71;
-            transition: width 0.8s ease;
-        }
-
-        /* Персонаж - движение по центру по горизонтали */
-        #hero {
-            position: absolute;
-            width: 100px;
-            bottom: 250px; /* Высота по центру мостов на фоне */
-            left: 50px; /* Старт у хижины слева */
-            transition: left 1.5s ease-in-out;
-            z-index: 10;
-        }
-
-        /* UI Слой */
-        #ui-layer {
-            position: absolute;
-            top: 20px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            z-index: 20;
-        }
-
-        /* Блок с рупором (уменьшен в 3 раза) */
-        .target-card {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--panel-bg);
-            padding: 8px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        #target-image { height: 40px; border-radius: 5px; } /* x3 меньше предыдущих 120px */
-        .audio-btn { cursor: pointer; width: 25px; }
-
-        /* Собираемый мостик (x2 больше) */
-        #bridge-slots { 
-            display: flex; 
-            gap: 15px; 
-            padding: 15px;
-            background: var(--panel-bg);
-            border-radius: 20px;
-        }
-        .slot {
-            width: 180px; /* Увеличено */
-            height: 110px;
-            background: var(--slot-url) no-repeat center bottom;
-            background-size: contain;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Инвентарь (подсказки x2 больше, на подложке) */
-        #inventory {
-            position: absolute;
-            bottom: 20px;
-            width: auto;
-            left: 50%;
-            transform: translateX(-50%);
+            inset: 0;
             display: flex;
             justify-content: center;
-            gap: 20px;
-            padding: 15px;
-            background: var(--panel-bg);
-            border-radius: 20px;
-            z-index: 20;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(0,0,0,0.5);
         }
-        .letter-block {
-            width: 160px; /* Увеличено, соразмерно слоту */
-            height: 100px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            cursor: grab;
-        }
-
-        #check-btn {
-            padding: 12px 30px;
-            font-size: 20px;
-            border: none;
-            background: #f39c12;
-            color: white;
-            border-radius: 10px;
+        #start-button {
             cursor: pointer;
-            font-weight: bold;
+            width: 200px;
+            transition: transform 0.2s;
         }
+        #start-button:hover { transform: scale(1.1); }
 
-        /* Модальное окно Well Done на подложке */
-        #win-message {
+        /* Диалоговое окно */
+        #dialog-box {
             display: none;
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            background: var(--panel-bg);
+            width: 500px;
+            height: 300px;
+            background: var(--ui-bg) no-repeat center;
+            background-size: contain;
+            z-index: 500;
             padding: 40px;
-            border-radius: 30px;
             text-align: center;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            z-index: 200;
+            box-sizing: border-box;
+            cursor: pointer;
         }
-        #win-message h1 { color: #2ecc71; font-size: 48px; margin: 0; }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
+        /* Герой и восклицательный знак */
+        #hero-container {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            z-index: 100;
+            transition: all 1.5s ease-in-out;
+            display: none;
         }
-        .error-shake { animation: shake 0.3s ease-in-out 2; }
+        #hero { width: 100%; }
+        #quest-mark {
+            position: absolute;
+            top: -40px; left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            cursor: pointer;
+            animation: pulse 1s infinite alternate;
+            display: none;
+        }
+
+        @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; transform: translateX(-50%) scale(1.2); } }
+
+        /* Интерфейс заданий */
+        #ui-layer {
+            display: none;
+            position: absolute;
+            top: 20px; width: 100%;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 50;
+        }
+
+        .target-card {
+            background: var(--word-bg) no-repeat center;
+            background-size: contain;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #bridge-slots { 
+            background: var(--ui-bg) no-repeat center;
+            background-size: cover;
+            padding: 20px;
+            display: flex; gap: 10px;
+            border-radius: 15px;
+        }
+
+        #progress-container { position: absolute; top: 0; width: 100%; height: 12px; background: rgba(0,0,0,0.3); z-index: 200; }
+        #progress-bar { height: 100%; width: 0%; background: #2ecc71; transition: width 0.5s; }
+
+        .slot, .letter-block { width: 140px; height: 90px; background-size: contain; background-repeat: no-repeat; }
+        
+        #final-cover {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: url('https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/cover.gif') no-repeat center;
+            background-size: cover;
+            z-index: 2000;
+        }
     </style>
 </head>
 <body>
 
 <div id="game-viewport">
+    <div id="start-screen">
+        <img id="start-button" src="https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/startbutton.png" onclick="startGame()">
+    </div>
+
     <div id="progress-container"><div id="progress-bar"></div></div>
-    
-    <img id="hero" src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/hero.png">
+
+    <div id="hero-container">
+        <img id="quest-mark" src="https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/quest_mark.png" onclick="showIntro()">
+        <img id="hero" src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/hero.png">
+    </div>
+
+    <div id="dialog-box" onclick="startFirstTask()">
+        <p id="dialog-text" style="margin-top: 60px; font-weight: bold; color: #4a2f1b;"></p>
+    </div>
 
     <div id="ui-layer">
         <div class="target-card">
-            <img id="target-image" src="">
-            <img id="dictation-btn" class="audio-btn" src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/dictation-btn.png" onclick="game.playAudio()">
+            <img id="target-image" style="height: 50px;">
+            <img src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/dictation-btn.png" style="width: 30px; cursor: pointer;" onclick="game.playAudio()">
         </div>
-        
         <div id="bridge-slots"></div>
-        <button id="check-btn" onclick="game.checkWord()">Check</button>
+        <button onclick="game.checkWord()" style="padding: 10px 20px; cursor: pointer;">Check</button>
     </div>
 
-    <div id="inventory"></div>
-
-    <div id="win-message">
-        <h1>Well done!</h1>
-    </div>
+    <div id="inventory" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px;"></div>
+    
+    <div id="final-cover"></div>
 </div>
 
 <script>
 const BASE = 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/';
+
+// Траектория по 7 точкам (согласно красным стрелкам)
+const PATH = [
+    {x: 50, y: 450},   // Хижина
+    {x: 250, y: 520},  // Стрелка 1
+    {x: 450, y: 400},  // Стрелка 2
+    {x: 650, y: 500},  // Стрелка 3
+    {x: 850, y: 420},  // Стрелка 4
+    {x: 1000, y: 510}, // Стрелка 5
+    {x: 1050, y: 300}, // Стрелка 6
+    {x: 1080, y: 100}  // Замок
+];
+
+function startGame() {
+    document.getElementById('start-screen').style.display = 'none';
+    const viewport = document.getElementById('game-viewport');
+    viewport.style.backgroundSize = '100%'; // Приближение фона
+    
+    const heroCont = document.getElementById('hero-container');
+    heroCont.style.display = 'block';
+    heroCont.style.left = PATH[0].x + 'px';
+    heroCont.style.top = PATH[0].y + 'px';
+    
+    setTimeout(() => {
+        document.getElementById('quest-mark').style.display = 'block';
+    }, 2000);
+}
+
+function showIntro() {
+    document.getElementById('quest-mark').style.display = 'none';
+    const dialog = document.getElementById('dialog-box');
+    dialog.style.display = 'block';
+    document.getElementById('dialog-text').innerText = "Hello! Help me build the words and cross the bridges to get to the castle. Listen, drag and drop the bridge blocks to make the words.";
+}
+
+function startFirstTask() {
+    document.getElementById('dialog-box').style.display = 'none';
+    document.getElementById('ui-layer').style.display = 'flex';
+    game.loadLevel();
+}
 
 class BridgeGame {
     constructor() {
@@ -192,31 +211,28 @@ class BridgeGame {
             { word: 'tip', img: 'tip.png', audio: 'tip.mp3' }
         ];
         this.currentIdx = 0;
-        this.loadLevel();
     }
 
     loadLevel() {
         const level = this.levels[this.currentIdx];
         document.getElementById('target-image').src = BASE + level.img;
-        
         const slotsCont = document.getElementById('bridge-slots');
         slotsCont.innerHTML = '';
         level.word.split('').forEach(() => {
             const slot = document.createElement('div');
             slot.className = 'slot';
+            slot.style.backgroundImage = `url(${BASE}bridge-slot.png)`;
             slot.ondragover = (e) => e.preventDefault();
             slot.ondrop = (e) => this.handleDrop(e);
             slotsCont.appendChild(slot);
         });
-
         this.renderInventory(level.word);
     }
 
     renderInventory(word) {
         const inv = document.getElementById('inventory');
         inv.innerHTML = '';
-        const chars = word.split('').sort(() => Math.random() - 0.5);
-        chars.forEach(char => {
+        word.split('').sort(() => Math.random() - 0.5).forEach(char => {
             const block = document.createElement('div');
             block.className = 'letter-block';
             block.style.backgroundImage = `url(${BASE}${char}-hint.png)`;
@@ -241,10 +257,6 @@ class BridgeGame {
             block.style.backgroundImage = `url(${BASE}${char}.png)`;
             block.dataset.letter = char;
             slot.appendChild(block);
-            
-            const original = Array.from(document.querySelectorAll('#inventory .letter-block'))
-                                  .find(b => b.dataset.letter === char && b.style.opacity === '0.4');
-            if (original) original.remove();
         }
     }
 
@@ -252,57 +264,35 @@ class BridgeGame {
         const slots = document.querySelectorAll('.slot');
         let builtWord = '';
         slots.forEach(s => { if (s.firstChild) builtWord += s.firstChild.dataset.letter; });
-
+        
         if (builtWord === this.levels[this.currentIdx].word) {
-            this.handleSuccess();
-        } else {
-            this.handleError();
+            this.currentIdx++;
+            this.updateProgress();
+            this.moveHero();
+            if (this.currentIdx < this.levels.length) {
+                setTimeout(() => this.loadLevel(), 1600);
+            } else {
+                setTimeout(() => document.getElementById('final-cover').style.display = 'block', 2000);
+            }
         }
-    }
-
-    handleSuccess() {
-        this.currentIdx++;
-        this.updateProgress();
-        this.moveHero();
-
-        if (this.currentIdx < this.levels.length) {
-            setTimeout(() => this.loadLevel(), 1600);
-        } else {
-            setTimeout(() => {
-                document.getElementById('win-message').style.display = 'block';
-            }, 1000);
-        }
-    }
-
-    handleError() {
-        const slotsCont = document.getElementById('bridge-slots');
-        slotsCont.classList.add('error-shake');
-        setTimeout(() => {
-            slotsCont.classList.remove('error-shake');
-            this.loadLevel();
-        }, 600);
     }
 
     updateProgress() {
-        const percent = (this.currentIdx / this.levels.length) * 100;
-        document.getElementById('progress-bar').style.width = percent + '%';
+        document.getElementById('progress-bar').style.width = (this.currentIdx / this.levels.length * 100) + '%';
     }
 
     moveHero() {
+        const cont = document.getElementById('hero-container');
         const hero = document.getElementById('hero');
-        // Равномерное движение по горизонтали (от 50px до 1050px)
-        const totalDistance = 1000; 
-        const step = totalDistance / this.levels.length;
-        const newLeft = 50 + (step * this.currentIdx);
+        const pos = PATH[this.currentIdx] || PATH[PATH.length-1];
         
         hero.src = BASE + 'hero.gif';
-        hero.style.left = newLeft + 'px';
+        cont.style.left = pos.x + 'px';
+        cont.style.top = pos.y + 'px';
         setTimeout(() => hero.src = BASE + 'hero.png', 1500);
     }
 
-    playAudio() {
-        new Audio(BASE + this.levels[this.currentIdx].audio).play();
-    }
+    playAudio() { new Audio(BASE + this.levels[this.currentIdx].audio).play(); }
 }
 
 const game = new BridgeGame();
