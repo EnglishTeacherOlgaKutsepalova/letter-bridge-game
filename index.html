@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letter Bridge: Precision Movement</title>
+    <title>Letter Bridge: Final Polish</title>
     <style>
         :root {
             --bg-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png');
@@ -51,7 +51,7 @@
             z-index: 100;
             transition: all 1.2s ease-in-out;
             display: none;
-            transform: translate(-50%, -100%);
+            transform: translate(-50%, -100%); /* Точка указывает на центр стоп */
         }
         #hero { width: 100%; }
 
@@ -126,16 +126,15 @@
 <script>
 const BASE = 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/';
 
-// Координаты перенастроены по твоей инструкции:
 const PATH = [
-    {x: 510, y: 492},  // 0: 470+40 вправо, 472+20 вниз
-    {x: 792, y: 651},  // 1: 692+100 вправо
-    {x: 1037, y: 775}, // 2: 937+100 вправо
-    {x: 1213, y: 595}, // 3: 645-50 вверх
-    {x: 967, y: 541},  // 4: 1067-100 влево, 531+10 вниз
-    {x: 836, y: 542},  // 5: 886-50 влево, 462+80 вниз
-    {x: 764, y: 420},  // 6: 1064-300 влево, 410+10 вниз
-    {x: 1219, y: 591}  // 7: 1319-100 влево, 191+400 вниз
+    {x: 515, y: 492},  // 0: +5 вправо
+    {x: 792, y: 651},  // 1
+    {x: 1037, y: 775}, // 2
+    {x: 1213, y: 595}, // 3
+    {x: 967, y: 541},  // 4
+    {x: 836, y: 532},  // 5: +10 вверх (было 542)
+    {x: 734, y: 450},  // 6: -30 влево (764-30), +30 вниз (420+30)
+    {x: 1119, y: 491}  // 7: -100 влево (1219-100), -100 вверх (591-100)
 ];
 
 function startGame() {
