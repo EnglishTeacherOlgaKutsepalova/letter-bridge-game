@@ -2,262 +2,547 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Letter Bridge: Final Polish</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Letter Bridge Game</title>
     <style>
-        :root {
-            --bg-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png');
-            --ui-bg: url('https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/background.png');
-            --hint-bg: url('https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/background1.png');
-            --word-bg: url('https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/wordbackground.png');
-            --slot-url: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/bridge-slot.png');
-        }
-        
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; display: flex; justify-content: center; align-items: center; }
-        
-        #game-viewport {
+        /* === ОБЩИЕ СТИЛИ === */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
             position: relative;
-            width: 1680px;
-            height: 945px;
-            background: var(--bg-url) no-repeat center center;
+        }
+
+        /* === ФОН (16:9) === */
+        body {
+            background: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/location.png') no-repeat center center;
             background-size: cover;
+            background-position: center center;
+        }
+
+        /* === КОНТЕЙНЕР ИГРЫ === */
+        .game-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             overflow: hidden;
         }
 
-        #start-screen { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 1000; background: rgba(0,0,0,0.8); }
-        #start-button { cursor: pointer; width: 600px; transition: transform 0.2s; }
-        #start-button:hover { transform: scale(1.05); }
-
-        #dialog-box {
-            display: none;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 850px;
-            height: 500px;
-            background: var(--ui-bg) no-repeat center;
-            background-size: contain;
-            z-index: 500;
-            padding: 80px 140px;
-            text-align: center;
-            box-sizing: border-box;
-            cursor: pointer;
-        }
-
-        #hero-container {
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            z-index: 100;
-            transition: all 1.2s ease-in-out;
-            display: none;
-            transform: translate(-50%, -100%); /* Точка указывает на центр стоп */
-        }
-        #hero { width: 100%; }
-
-        #ui-layer {
-            display: none;
-            position: absolute;
-            top: 30px; width: 100%;
+        /* === БЕЗОПАСНАЯ ЗОНА (ПОЛНЫЙ РАЗМЕР) === */
+        .safe-zone {
+            width: 100%;
+            height: 100%;
+            display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            z-index: 50;
-        }
-
-        .target-card {
-            background: var(--word-bg) no-repeat center;
-            background-size: contain;
-            padding: 25px 50px;
-            display: flex; align-items: center; gap: 20px;
-        }
-
-        #bridge-slots { 
-            background: var(--ui-bg) no-repeat center;
-            background-size: 100% 100%;
-            padding: 40px 60px;
-            display: flex; gap: 8px; 
-        }
-
-        .slot, .letter-block { width: 170px; height: 110px; background-size: contain; background-repeat: no-repeat; background-position: center; }
-        .slot { background-image: var(--slot-url); }
-
-        #inventory {
-            display: none;
-            position: absolute;
-            bottom: 30px; left: 50%;
-            transform: translateX(-50%);
-            gap: 20px;
-            padding: 40px 80px;
-            background: var(--hint-bg) no-repeat center;
-            background-size: 100% 100%;
-            min-width: 400px;
             justify-content: center;
-            z-index: 50;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        #progress-container { position: absolute; top: 0; width: 100%; height: 12px; background: rgba(0,0,0,0.4); z-index: 200; }
-        #progress-bar { height: 100%; width: 0%; background: #2ecc71; transition: width 0.6s; }
-        
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-15px); } 75% { transform: translateX(15px); } }
+        /* === ИГРОВЫЕ ЭЛЕМЕНТЫ === */
+        .game-element {
+            position: absolute;
+            z-index: 10;
+        }
+
+        /* === МОСТ === */
+        .bridge-container {
+            position: absolute;
+            bottom: 15%;
+            left: 5%;
+            width: 90%;
+            height: 10%;
+        }
+
+        .bridge-base {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 25px;
+            background: linear-gradient(to bottom, #8B4513, #A0522D);
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .bridge-slots {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        .bridge-slot {
+            width: 5.5vw;
+            height: 5.5vw;
+            background: rgba(255,255,255,0.25);
+            border: 3px dashed rgba(255,255,255,0.7);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
+        }
+
+        /* === ПЕРСОНАЖ === */
+        .character {
+            position: absolute;
+            width: 4vw;
+            height: 6vw;
+            bottom: 18%;
+            left: 15%;
+            z-index: 20;
+            transition: left 1.2s ease-out, bottom 0.8s ease-out;
+            background-image: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/character.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        /* === КНОПКА СТАРТА === */
+        .btn {
+            background: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/startbutton.png') no-repeat center;
+            background-size: contain;
+            width: 22vw;
+            height: 9vw;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin: 1vw;
+            z-index: 100;
+        }
+
+        /* === ПРОЧИЕ ЭЛЕМЕНТЫ === */
+        .screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .progress-container {
+            width: 90%;
+            height: 1.5vw;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            margin: 1vw 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .level-info {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            font-size: 1.1vw;
+            font-weight: bold;
+            margin: 1vw 0;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .target-container {
+            text-align: center;
+            margin: 1.5vw 0;
+        }
+
+        .target-image {
+            width: 18vw;
+            height: 18vw;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin: 0 auto 1.5vw;
+        }
+
+        .target-word {
+            font-size: 2.2vw;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            min-height: 4vw;
+        }
+
+        .check-btn {
+            background: url('https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/dictation-btn.png') no-repeat center;
+            background-size: contain;
+            width: 20vw;
+            height: 7vw;
+            border: none;
+            cursor: pointer;
+            margin-top: 1.5vw;
+            transition: transform 0.3s;
+        }
+
+        .feedback {
+            margin-top: 1.5vw;
+            font-size: 1.6vw;
+            font-weight: bold;
+            min-height: 3.5vw;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .success { color: #4CAF50; }
+        .error { color: #ff5252; }
     </style>
 </head>
 <body>
+    <div class="game-container">
+        <div class="safe-zone">
+            <!-- СТАРТОВЫЙ ЭКРАН -->
+            <div class="screen start-screen" id="startScreen">
+                <h1 style="font-size: 2.5vw;">🌉 Letter Bridge</h1>
+                <p style="font-size: 1.4vw;">Build and Read!</p>
+                <button class="btn" id="startBtn"></button>
+            </div>
 
-<div id="game-viewport">
-    <div id="start-screen">
-        <img id="start-button" src="https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/startbutton.png" onclick="startGame()">
-    </div>
-    <div id="progress-container"><div id="progress-bar"></div></div>
-    <div id="hero-container"><img id="hero" src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/hero.png"></div>
-    <div id="dialog-box" onclick="startFirstTask()"><p id="dialog-text" style="font-size: 26px; line-height: 1.4; color: #4a2f1b; font-weight: bold; margin-top: 60px;"></p></div>
-    
-    <div id="ui-layer">
-        <div class="target-card">
-            <img id="target-image" style="height: 70px;">
-            <img src="https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/dictation-btn.png" style="width: 45px; cursor: pointer;" onclick="game.playAudio()">
+            <!-- ИГРОВОЙ ЭКРАН -->
+            <div class="screen game-container" id="gameScreen">
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="level-info">
+                    <span id="levelCounter" style="font-size: 1.1vw;">Level: 1/5</span>
+                    <span id="attemptsCounter" style="font-size: 1.1vw;">Attempts: 3</span>
+                </div>
+
+                <div class="target-container">
+                    <div class="target-image" id="targetImage"></div>
+                    <div class="target-word" id="targetWord"></div>
+                </div>
+
+                <div class="bridge-container">
+                    <div class="bridge-base"></div>
+                    <div class="bridge-slots" id="bridgeSlots"></div>
+                </div>
+
+                <div class="letters-container" id="lettersContainer"></div>
+                <button class="check-btn" id="checkBtn"></button>
+                <div class="feedback" id="feedback"></div>
+                
+                <!-- ПЕРСОНАЖ -->
+                <div class="character" id="character"></div>
+            </div>
+
+            <!-- ЭКРАН ПОБЕДЫ -->
+            <div class="screen win-screen" id="winScreen">
+                <div class="win-title" style="font-size: 2.8vw;">🎉 Congratulations!</div>
+                <p style="font-size: 1.4vw;">You built all the bridges!</p>
+                <div class="win-stats" id="winStats" style="font-size: 1.4vw;"></div>
+                <button class="restart-btn" id="restartBtn" style="font-size: 1.4vw;">Play Again</button>
+            </div>
         </div>
-        <div id="bridge-slots"></div>
-        <button onclick="game.checkWord()" style="margin-top:10px; padding: 12px 35px; font-size: 22px; cursor: pointer; background: #f39c12; border: none; border-radius: 10px; color: white; font-weight: bold; box-shadow: 0 4px 0 #d35400;">Check Word</button>
     </div>
-    <div id="inventory"></div>
-</div>
 
-<script>
-const BASE = 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/';
+    <script>
+        // === КОНФИГУРАЦИЯ ===
+        const gameConfig = {
+            words: ['ant', 'cat', 'dog', 'sun', 'hat'],
+            attempts: 3,
+            mode: 'normal',
+            showWord: true,
+            useAudio: true,
+            imagesPath: 'https://EnglishTeacherOlgaKutsepalova.github.io/letter-bridge-game/'
+        };
 
-const PATH = [
-    {x: 515, y: 492},  // 0: +5 вправо
-    {x: 792, y: 651},  // 1
-    {x: 1037, y: 775}, // 2
-    {x: 1213, y: 595}, // 3
-    {x: 967, y: 541},  // 4
-    {x: 836, y: 532},  // 5: +10 вверх (было 542)
-    {x: 734, y: 450},  // 6: -30 влево (764-30), +30 вниз (420+30)
-    {x: 1119, y: 491}  // 7: -100 влево (1219-100), -100 вверх (591-100)
-];
+        // === СОСТОЯНИЕ ИГРЫ ===
+        let gameState = {
+            currentLevel: 0,
+            totalLevels: 0,
+            currentAttempts: 0,
+            placedLetters: [],
+            correctOrder: [],
+            startTime: null,
+            completedLevels: 0
+        };
 
-function startGame() {
-    document.getElementById('start-screen').style.display = 'none';
-    const hc = document.getElementById('hero-container');
-    hc.style.display = 'block';
-    hc.style.left = PATH[0].x + 'px';
-    hc.style.top = PATH[0].y + 'px';
-    setTimeout(showIntro, 400);
-}
+        // === АССОЦИАЦИИ БУКВ ===
+        const letterAssociations = {
+            'a': 'apple.png', 'b': 'ball.png', 'c': 'cat.png', 'd': 'dog.png', 'e': 'egg.png',
+            'f': 'fish.png', 'g': 'goat.png', 'h': 'hat.png', 'i': 'ice.png', 'j': 'jam.png',
+            'k': 'kite.png', 'l': 'lion.png', 'm': 'moon.png', 'n': 'nest.png', 'o': 'orange.png',
+            'p': 'pen.png', 'q': 'queen.png', 'r': 'rabbit.png', 's': 'sun.png', 't': 'table.png',
+            'u': 'umbrella.png', 'v': 'violin.png', 'w': 'water.png', 'x': 'box.png', 'y': 'yoyo.png', 'z': 'zebra.png'
+        };
 
-function showIntro() {
-    const db = document.getElementById('dialog-box');
-    db.style.display = 'block';
-    document.getElementById('dialog-text').innerText = "Hello! Help me build the words and cross the bridges to get to the castle. Listen, drag and drop the bridge blocks to make the words.";
-}
+        // === DOM ЭЛЕМЕНТЫ ===
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const winScreen = document.getElementById('winScreen');
+        const startBtn = document.getElementById('startBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const progressBar = document.getElementById('progressBar');
+        const levelCounter = document.getElementById('levelCounter');
+        const attemptsCounter = document.getElementById('attemptsCounter');
+        const targetImage = document.getElementById('targetImage');
+        const targetWord = document.getElementById('targetWord');
+        const bridgeSlots = document.getElementById('bridgeSlots');
+        const lettersContainer = document.getElementById('lettersContainer');
+        const feedback = document.getElementById('feedback');
+        const winStats = document.getElementById('winStats');
 
-function startFirstTask() {
-    document.getElementById('dialog-box').style.display = 'none';
-    document.getElementById('ui-layer').style.display = 'flex';
-    game.loadLevel();
-}
+        // === ИНИЦИАЛИЗАЦИЯ ===
+        function initGame() {
+            // Парсинг параметров из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('words')) {
+                gameConfig.words = urlParams.get('words').split(',').map(w => w.trim().toLowerCase());
+            }
+            if (urlParams.has('attempts')) {
+                gameConfig.attempts = parseInt(urlParams.get('attempts'));
+            }
+            if (urlParams.has('mode')) {
+                gameConfig.mode = urlParams.get('mode');
+            }
+            if (urlParams.has('showWord')) {
+                gameConfig.showWord = urlParams.get('showWord') === 'true';
+            }
+            if (urlParams.has('useAudio')) {
+                gameConfig.useAudio = urlParams.get('useAudio') === 'true';
+            }
 
-class BridgeGame {
-    constructor() {
-        this.levels = [
-            { word: 'sat', img: 'sat.png', audio: 'sat.mp3' },
-            { word: 'pat', img: 'pat.png', audio: 'pat.mp3' },
-            { word: 'sit', img: 'sit.png', audio: 'sit.mp3' },
-            { word: 'pit', img: 'pit.png', audio: 'pit.mp3' },
-            { word: 'pin', img: 'pin.png', audio: 'pin.mp3' },
-            { word: 'tin', img: 'tin.png', audio: 'tin.mp3' },
-            { word: 'tip', img: 'tip.png', audio: 'tip.mp3' }
-        ];
-        this.currentIdx = 0;
-    }
+            gameState.totalLevels = gameConfig.words.length;
+            gameState.currentAttempts = gameConfig.attempts;
 
-    loadLevel() {
-        const lvl = this.levels[this.currentIdx];
-        document.getElementById('target-image').src = BASE + lvl.img;
-        const slots = document.getElementById('bridge-slots');
-        slots.innerHTML = '';
-        lvl.word.split('').forEach(() => {
-            const s = document.createElement('div');
-            s.className = 'slot';
-            s.ondragover = (e) => e.preventDefault();
-            s.ondrop = (e) => this.handleDrop(e);
-            slots.appendChild(s);
-        });
-        
-        document.getElementById('inventory').style.display = 'flex';
-        this.renderInventory(lvl.word);
-    }
+            // Обработчики
+            startBtn.addEventListener('click', startGame);
+            checkBtn.addEventListener('click', checkAnswer);
+            restartBtn.addEventListener('click', resetGame);
 
-    renderInventory(word) {
-        const inv = document.getElementById('inventory');
-        inv.innerHTML = '';
-        word.split('').sort(() => Math.random() - 0.5).forEach(char => {
-            const b = document.createElement('div');
-            b.className = 'letter-block';
-            b.style.backgroundImage = `url(${BASE}${char}-hint.png)`;
-            b.draggable = true;
-            b.dataset.letter = char;
-            b.ondragstart = (e) => e.dataTransfer.setData('text', char);
-            inv.appendChild(b);
-        });
-    }
-
-    handleDrop(e) {
-        e.preventDefault();
-        const char = e.dataTransfer.getData('text');
-        const slot = e.target.closest('.slot');
-        if (slot && !slot.hasChildNodes()) {
-            const b = document.createElement('div');
-            b.className = 'letter-block';
-            b.style.backgroundImage = `url(${BASE}${char}.png)`;
-            b.dataset.letter = char;
-            slot.appendChild(b);
-            const original = Array.from(document.querySelectorAll('#inventory .letter-block')).find(el => el.dataset.letter === char);
-            if(original) original.remove();
+            // Drag-and-drop
+            document.addEventListener('dragstart', handleDragStart);
+            document.addEventListener('dragover', handleDragOver);
+            document.addEventListener('drop', handleDrop);
+            
+            // Инициализация размеров
+            updateGameSizes();
         }
-    }
 
-    checkWord() {
-        const slots = document.querySelectorAll('.slot');
-        let built = '';
-        slots.forEach(s => { if(s.firstChild) built += s.firstChild.dataset.letter; });
-        
-        if (built === this.levels[this.currentIdx].word) {
-            this.handleSuccess();
-        } else {
-            const sc = document.getElementById('bridge-slots');
-            sc.style.animation = 'shake 0.4s ease-in-out 2';
-            setTimeout(() => { sc.style.animation = ''; this.loadLevel(); }, 500);
+        // === ОБНОВЛЕНИЕ РАЗМЕРОВ ===
+        function updateGameSizes() {
+            const safeZone = document.querySelector('.safe-zone');
+            const width = safeZone.offsetWidth;
+            const height = safeZone.offsetHeight;
         }
-    }
 
-    handleSuccess() {
-        this.currentIdx++;
-        document.getElementById('progress-bar').style.width = (this.currentIdx / this.levels.length * 100) + '%';
-        document.getElementById('inventory').style.display = 'none';
-        
-        this.moveHero();
-        if (this.currentIdx < this.levels.length) {
-            setTimeout(() => this.loadLevel(), 1500);
-        } else {
-            setTimeout(() => { window.location.href = 'https://raw.githubusercontent.com/EnglishTeacherOlgaKutsepalova/letter-bridge-game/main/cover.gif'; }, 2000);
+        // === ЗАПУСК ИГРЫ ===
+        function startGame() {
+            startScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
+            gameState.startTime = Date.now();
+            loadLevel(0);
         }
-    }
 
-    moveHero() {
-        const hc = document.getElementById('hero-container');
-        const h = document.getElementById('hero');
-        const p = PATH[this.currentIdx];
-        h.src = BASE + 'hero.gif';
-        hc.style.left = p.x + 'px';
-        hc.style.top = p.y + 'px';
-        setTimeout(() => h.src = BASE + 'hero.png', 1200);
-    }
+        // === ЗАГРУЗКА УРОВНЯ ===
+        function loadLevel(levelIndex) {
+            gameState.currentLevel = levelIndex;
+            gameState.currentAttempts = gameConfig.attempts;
+            gameState.placedLetters = [];
+            gameState.correctOrder = gameConfig.words[levelIndex].split('');
 
-    playAudio() { new Audio(BASE + this.levels[this.currentIdx].audio).play(); }
-}
-const game = new BridgeGame();
-</script>
+            // Прогресс
+            const progress = (levelIndex / gameState.totalLevels) * 100;
+            progressBar.style.width = progress + '%';
+            levelCounter.textContent = `Level: ${levelIndex + 1}/${gameState.totalLevels}`;
+            attemptsCounter.textContent = `Attempts: ${gameState.currentAttempts}`;
+
+            // Картинка цели
+            const word = gameConfig.words[levelIndex];
+            targetImage.style.backgroundImage = `url('${gameConfig.imagesPath}${word}.png')`;
+            
+            // Слово текстом
+            targetWord.textContent = gameConfig.showWord ? word.toUpperCase() : '';
+
+            // Озвучка
+            if (gameConfig.useAudio) {
+                playWordAudio(word);
+            }
+
+            // Слоты моста
+            createBridgeSlots(word.length);
+
+            // Буквы
+            createLetterBlocks(word);
+
+            // Очистка фидбека
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+        }
+
+        // === СОЗДАНИЕ СЛОТОВ ===
+        function createBridgeSlots(count) {
+            bridgeSlots.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'bridge-slot';
+                slot.dataset.index = i;
+                bridgeSlots.appendChild(slot);
+            }
+        }
+
+        // === СОЗДАНИЕ БУКВ ===
+        function createLetterBlocks(word) {
+            lettersContainer.innerHTML = '';
+            const letters = [...word].sort(() => Math.random() - 0.5);
+
+            letters.forEach(letter => {
+                const block = document.createElement('div');
+                block.className = 'letter-block';
+                block.dataset.letter = letter;
+                block.draggable = true;
+                block.innerHTML = `
+                    <span style="font-size: 1.9vw;">${letter.toUpperCase()}</span>
+                    <div class="letter-image" style="background-image: url('${gameConfig.imagesPath}${letterAssociations[letter]}'); width: 3.5vw; height: 3.5vw;"></div>
+                `;
+                lettersContainer.appendChild(block);
+            });
+        }
+
+        // === DRAG & DROP ===
+        function handleDragStart(e) {
+            if (e.target.classList.contains('letter-block')) {
+                e.dataTransfer.setData('text/plain', e.target.dataset.letter);
+                setTimeout(() => e.target.style.opacity = '0.4', 0);
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            if (e.target.classList.contains('bridge-slot') && !e.target.textContent) {
+                e.dataTransfer.dropEffect = 'move';
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const slot = e.target.closest('.bridge-slot');
+            if (!slot || slot.textContent) return;
+
+            const letter = e.dataTransfer.getData('text/plain');
+            const index = parseInt(slot.dataset.index);
+
+            slot.textContent = letter.toUpperCase();
+            slot.style.backgroundColor = 'rgba(76, 175, 80, 0.8)';
+            slot.style.borderColor = 'rgba(255,255,255,0.9)';
+            gameState.placedLetters[index] = letter;
+
+            // Скрыть букву
+            const block = [...document.querySelectorAll('.letter-block')]
+                .find(b => b.dataset.letter === letter && b.style.opacity !== '0');
+            if (block) block.style.opacity = '0';
+        }
+
+        // === ПРОВЕРКА ОТВЕТА ===
+        function checkAnswer() {
+            const isCorrect = gameState.placedLetters.length === gameState.correctOrder.length &&
+                gameState.placedLetters.every((l, i) => l === gameState.correctOrder[i]);
+
+            if (isCorrect) {
+                feedback.textContent = '✅ Well done!';
+                feedback.className = 'feedback success';
+                gameState.completedLevels++;
+                
+                setTimeout(() => {
+                    if (gameState.currentLevel < gameState.totalLevels - 1) {
+                        loadLevel(gameState.currentLevel + 1);
+                    } else {
+                        showWinScreen();
+                    }
+                }, 1200);
+            } else {
+                gameState.currentAttempts--;
+                attemptsCounter.textContent = `Attempts: ${gameState.currentAttempts}`;
+                
+                feedback.textContent = '❌ Try again!';
+                feedback.className = 'feedback error';
+
+                // Подсветка ошибок
+                document.querySelectorAll('.bridge-slot').forEach((slot, i) => {
+                    if (gameState.placedLetters[i] !== gameState.correctOrder[i]) {
+                        slot.style.backgroundColor = 'rgba(244, 67, 54, 0.8)';
+                        slot.style.animation = 'shake 0.5s';
+                        setTimeout(() => slot.style.animation = '', 500);
+                    }
+                });
+
+                if (gameConfig.mode === 'strict' && gameState.currentAttempts <= 0) {
+                    setTimeout(() => {
+                        alert('Game over! No attempts left.');
+                        resetGame();
+                    }, 800);
+                }
+            }
+        }
+
+        // === ЭКРАН ПОБЕДЫ ===
+        function showWinScreen() {
+            gameScreen.style.display = 'none';
+            winScreen.style.display = 'flex';
+            
+            const totalTime = Math.floor((Date.now() - gameState.startTime) / 1000);
+            winStats.innerHTML = `
+                Levels completed: ${gameState.completedLevels}/${gameState.totalLevels}<br>
+                Time: ${Math.floor(totalTime / 60)}m ${totalTime % 60}s
+            `;
+        }
+
+        // === СБРОС ИГРЫ ===
+        function resetGame() {
+            winScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+            gameState = {
+                currentLevel: 0,
+                totalLevels: gameConfig.words.length,
+                currentAttempts: gameConfig.attempts,
+                placedLetters: [],
+                correctOrder: [],
+                startTime: null,
+                completedLevels: 0
+            };
+        }
+
+        // === ОЗВУЧКА ===
+        function playWordAudio(word) {
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        // === ЗАПУСК ===
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
 </body>
 </html>
